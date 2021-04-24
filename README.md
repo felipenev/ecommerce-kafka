@@ -1,2 +1,2 @@
-# kafka
-Kafka project. 
+# Ecommerce with Kafka
+Kafka project.
