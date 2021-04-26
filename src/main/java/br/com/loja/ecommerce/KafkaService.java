@@ -10,12 +10,12 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-class KafkaService {
+class KafkaService implements AutoCloseable {
 
     private final KafkaConsumer<String, String> consumer;
     private ConsumerFunction parse;
 
-    public KafkaService(String groupId, String topic, ConsumerFunction parse){
+    KafkaService(String groupId, String topic, ConsumerFunction parse){
         this.parse = parse;
 
         this.consumer = new KafkaConsumer<>(properties(groupId));
@@ -44,5 +44,10 @@ class KafkaService {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);//Simple class name as group id
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");//Receive, process and autocommit one by one
         return properties;
+    }
+
+    @Override
+    public void close() {
+        this.consumer.close();
     }
 }
