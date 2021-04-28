@@ -1,6 +1,7 @@
 package br.com.loja.ecommerce;
 
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -8,19 +9,26 @@ public class NewOrderMain {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        KafkaDispatcher kafkaDispatcher = new KafkaDispatcher();
+        try(KafkaDispatcher orderKafkaDispatcher = new KafkaDispatcher<Order>()){
+            try(KafkaDispatcher emailKafkaDispatcher = new KafkaDispatcher<String>()){
+                for(var i = 0; i < 10; i++){
 
-        for(var i = 0; i < 10; i++){
+                    //Topics to send
+                    var userId = UUID.randomUUID().toString();
+                    var orderid = UUID.randomUUID().toString();
+                    var amount = new BigDecimal(Math.random() * 5000 + 1);
 
-            //Topics to send
-            var key = UUID.randomUUID().toString();
-            var value = key+",675757,3423424334";
-            kafkaDispatcher.send("ECOMMERCE_NEW_ORDER", key, value);//new order topic dispatcher
+                    var order = new Order(userId, orderid, amount);
+                    orderKafkaDispatcher.send("ECOMMERCE_NEW_ORDER", userId, order);//new order topic dispatcher
 
-            var email = "Thank you for your order! We are processing your order!";
-            kafkaDispatcher.send("ECOMMERCE_SEND_EMAIL", key, email);//email topic dispatcher
+                    var email = "Thank you for your order! We are processing your order!";
+                    emailKafkaDispatcher.send("ECOMMERCE_SEND_EMAIL", userId, email);//email topic dispatcher
 
+                }
+            }
         }
+
+
     }
 
 }
